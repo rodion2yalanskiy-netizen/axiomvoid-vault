@@ -44,23 +44,26 @@ jobs:
             echo "Found (manual): $INPUT_FILE"
             exit 0
           fi
-          # Ищем файл с status: pending в frontmatter (надёжный способ)
+          # Ищем задачи: status:pending ИЛИ файлы без status (заметки с телефона)
           TASK=""
           for f in *AI*/*.md; do
             [ -f "$f" ] || continue
             [[ "$f" == *"README"* ]] && continue
             STATUS=$(grep -m1 "^status:" "$f" 2>/dev/null | awk '{print $2}')
-            if [ "$STATUS" = "pending" ]; then
-              TASK="$f"
-              break
-            fi
+            # Пропускаем завершённые/архивные/обрабатываемые
+            [[ "$STATUS" == "completed" ]] && continue
+            [[ "$STATUS" == "archived" ]] && continue
+            [[ "$STATUS" == "processing" ]] && continue
+            # Берём: pending ИЛИ нет status вообще (новая заметка с телефона)
+            TASK="$f"
+            break
           done
           if [ -z "$TASK" ]; then
             echo "No pending tasks found"
             echo "task_file=" >> $GITHUB_OUTPUT
           else
             echo "task_file=$TASK" >> $GITHUB_OUTPUT
-            echo "Found (pending): $TASK"
+            echo "Found: $TASK (status: ${STATUS:-none})"
           fi
 
       - name: Run AI agent (OpenRouter)
