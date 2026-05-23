@@ -1,0 +1,78 @@
+name: AI Agent Pipeline
+
+on:
+  push:
+    paths:
+      - "\U0001F916 AI Задачи/*.md"
+  workflow_dispatch:
+    inputs:
+      task_file:
+        description: "Path to task file (relative to repo root)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  process-task:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - name: Checkout vault
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Find changed task file
+        id: find_task
+        env:
+          INPUT_FILE: ${{ github.event.inputs.task_file }}
+        run: |
+          if [ -n "$INPUT_FILE" ]; then
+            echo "task_file=$INPUT_FILE" >> $GITHUB_OUTPUT
+            echo "Found (manual): $INPUT_FILE"
+          else
+            TASK=$(git diff --name-only HEAD~1 HEAD 2>/dev/null \
+              | grep -v "README" | grep "\.md$" \
+              | grep -v "^\.github" \
+              | grep -v "Выполнено" \
+              | head -1)
+            if [ -z "$TASK" ]; then
+              TASK=$(ls -t "🤖 AI Задачи/"*.md 2>/dev/null | grep -v README | head -1)
+            fi
+            echo "task_file=$TASK" >> $GITHUB_OUTPUT
+            echo "Found (auto): $TASK"
+          fi
+
+      - name: Run AI agent (OpenRouter)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TASK_FILE: ${{ steps.find_task.outputs.task_file }}
+        run: python scripts/process_task.py
+
+      - name: Save report to vault
+        run: python scripts/save_to_vault.py
+
+      - name: Commit and push report
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add "✅ Выполнено Claude/"
+          if git diff --staged --quiet; then
+            echo "Нечего коммитить"
+          else
+            TASK_NAME=$(cat /tmp/agent_task_name.txt 2>/dev/null || echo "task")
+            git commit -m "Agent report: ${TASK_NAME} [skip ci]"
+            git push origin main
+          fi
