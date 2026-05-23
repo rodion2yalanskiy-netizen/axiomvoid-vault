@@ -1,0 +1,18 @@
+# Obsidian системные файлы
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.obsidian/graph-cache.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Резервные копии
+*.backup_*
+.trash/
+
+# Временные файлы
+*.tmp
+*.temp

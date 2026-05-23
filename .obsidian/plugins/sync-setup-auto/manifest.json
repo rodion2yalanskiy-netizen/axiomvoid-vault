@@ -1,0 +1,9 @@
+{
+  "id": "sync-setup-auto",
+  "name": "Sync Auto Setup",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Auto-configure Obsidian Sync",
+  "author": "System",
+  "isDesktopOnly": true
+}
