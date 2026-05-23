@@ -43,11 +43,18 @@ jobs:
             echo "task_file=$INPUT_FILE" >> $GITHUB_OUTPUT
             echo "Found (manual): $INPUT_FILE"
           else
-            TASK=$(git diff --name-only HEAD~1 HEAD 2>/dev/null \
-              | grep -v "README" | grep "\.md$" \
-              | grep -v "^\.github" \
+            # Только ДОБАВЛЕННЫЕ файлы (--diff-filter=A) из папки AI Задачи
+            TASK=$(git diff --name-only --diff-filter=A HEAD~1 HEAD 2>/dev/null \
+              | grep "\.md$" \
+              | grep -v "README" \
               | grep -v "Выполнено" \
+              | grep -v "^\.github" \
               | head -1)
+            # Fallback: любые изменённые в AI Задачи
+            if [ -z "$TASK" ]; then
+              TASK=$(git diff --name-only HEAD~1 HEAD 2>/dev/null \
+                | grep "AI" | grep "\.md$" | grep -v "README" | head -1)
+            fi
             if [ -z "$TASK" ]; then
               TASK=$(ls -t "🤖 AI Задачи/"*.md 2>/dev/null | grep -v README | head -1)
             fi
