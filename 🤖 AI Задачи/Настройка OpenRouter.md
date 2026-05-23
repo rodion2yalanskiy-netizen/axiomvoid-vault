@@ -1,5 +1,5 @@
 ---
-status: processing
+status: completed
 tz_file: ТЗ_2026-05-22_Настройка OpenRouter.md
 ---
 
