@@ -3,7 +3,7 @@ name: AI Agent Pipeline
 on:
   push:
     paths:
-      - "\U0001F916 AI Задачи/*.md"
+      - "* AI */*.md"
   workflow_dispatch:
     inputs:
       task_file:
@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Find changed task file
+      - name: Find pending task
         id: find_task
         env:
           INPUT_FILE: ${{ github.event.inputs.task_file }}
@@ -42,42 +42,57 @@ jobs:
           if [ -n "$INPUT_FILE" ]; then
             echo "task_file=$INPUT_FILE" >> $GITHUB_OUTPUT
             echo "Found (manual): $INPUT_FILE"
+            exit 0
+          fi
+          # Ищем файл с status: pending в frontmatter (надёжный способ)
+          TASK=""
+          for f in *AI*/*.md; do
+            [ -f "$f" ] || continue
+            [[ "$f" == *"README"* ]] && continue
+            STATUS=$(grep -m1 "^status:" "$f" 2>/dev/null | awk '{print $2}')
+            if [ "$STATUS" = "pending" ]; then
+              TASK="$f"
+              break
+            fi
+          done
+          if [ -z "$TASK" ]; then
+            echo "No pending tasks found"
+            echo "task_file=" >> $GITHUB_OUTPUT
           else
-            # Только ДОБАВЛЕННЫЕ файлы (--diff-filter=A) из папки AI Задачи
-            TASK=$(git diff --name-only --diff-filter=A HEAD~1 HEAD 2>/dev/null \
-              | grep "\.md$" \
-              | grep -v "README" \
-              | grep -v "Выполнено" \
-              | grep -v "^\.github" \
-              | head -1)
-            # Fallback: любые изменённые в AI Задачи
-            if [ -z "$TASK" ]; then
-              TASK=$(git diff --name-only HEAD~1 HEAD 2>/dev/null \
-                | grep "AI" | grep "\.md$" | grep -v "README" | head -1)
-            fi
-            if [ -z "$TASK" ]; then
-              TASK=$(ls -t "🤖 AI Задачи/"*.md 2>/dev/null | grep -v README | head -1)
-            fi
             echo "task_file=$TASK" >> $GITHUB_OUTPUT
-            echo "Found (auto): $TASK"
+            echo "Found (pending): $TASK"
           fi
 
       - name: Run AI agent (OpenRouter)
+        if: steps.find_task.outputs.task_file != ''
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TASK_FILE: ${{ steps.find_task.outputs.task_file }}
         run: python scripts/process_task.py
 
       - name: Save report to vault
+        if: steps.find_task.outputs.task_file != ''
         run: python scripts/save_to_vault.py
 
+      - name: Mark task as completed
+        if: steps.find_task.outputs.task_file != ''
+        env:
+          TASK_FILE: ${{ steps.find_task.outputs.task_file }}
+        run: |
+          if [ -f "$TASK_FILE" ]; then
+            sed -i 's/^status: pending/status: completed/' "$TASK_FILE"
+            echo "Marked as completed: $TASK_FILE"
+          fi
+
       - name: Commit and push report
+        if: steps.find_task.outputs.task_file != ''
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git add "✅ Выполнено Claude/"
+          git add "✅ Выполнено Claude/" "$TASK_FILE" 2>/dev/null || true
+          git add *Выполнено*/ 2>/dev/null || true
           if git diff --staged --quiet; then
-            echo "Нечего коммитить"
+            echo "Nothing to commit"
           else
             TASK_NAME=$(cat /tmp/agent_task_name.txt 2>/dev/null || echo "task")
             git commit -m "Agent report: ${TASK_NAME} [skip ci]"
