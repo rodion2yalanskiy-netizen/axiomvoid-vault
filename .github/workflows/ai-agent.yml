@@ -17,7 +17,7 @@ permissions:
 jobs:
   process-task:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
     steps:
@@ -44,17 +44,15 @@ jobs:
             echo "Found (manual): $INPUT_FILE"
             exit 0
           fi
-          # Ищем задачи: status:pending ИЛИ файлы без status (заметки с телефона)
+          # Ищем задачи: status:pending ИЛИ без статуса (заметки с телефона)
           TASK=""
           for f in *AI*/*.md; do
             [ -f "$f" ] || continue
             [[ "$f" == *"README"* ]] && continue
             STATUS=$(grep -m1 "^status:" "$f" 2>/dev/null | awk '{print $2}')
-            # Пропускаем завершённые/архивные/обрабатываемые
             [[ "$STATUS" == "completed" ]] && continue
-            [[ "$STATUS" == "archived" ]] && continue
+            [[ "$STATUS" == "archived" ]]  && continue
             [[ "$STATUS" == "processing" ]] && continue
-            # Берём: pending ИЛИ нет status вообще (новая заметка с телефона)
             TASK="$f"
             break
           done
@@ -66,8 +64,33 @@ jobs:
             echo "Found: $TASK (status: ${STATUS:-none})"
           fi
 
-      - name: Run AI agent (OpenRouter)
+      - name: Detect task tool
+        id: detect_tool
         if: steps.find_task.outputs.task_file != ''
+        env:
+          TASK_FILE: ${{ steps.find_task.outputs.task_file }}
+        run: |
+          TOOL=$(grep -m1 "^tool:" "$TASK_FILE" 2>/dev/null | awk '{print $2}')
+          TOOL="${TOOL:-openrouter}"
+          echo "tool=$TOOL" >> $GITHUB_OUTPUT
+          echo "Detected tool: $TOOL"
+
+      - name: Process task (cloud AI)
+        if: |
+          steps.find_task.outputs.task_file != '' &&
+          steps.detect_tool.outputs.tool != 'code' &&
+          steps.detect_tool.outputs.tool != 'antigravity'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TOGETHER_API_KEY:   ${{ secrets.TOGETHER_API_KEY }}
+          TASK_FILE: ${{ steps.find_task.outputs.task_file }}
+        run: python scripts/process_task.py
+
+      - name: Delegate local task (code/antigravity)
+        if: |
+          steps.find_task.outputs.task_file != '' &&
+          (steps.detect_tool.outputs.tool == 'code' ||
+           steps.detect_tool.outputs.tool == 'antigravity')
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TASK_FILE: ${{ steps.find_task.outputs.task_file }}
@@ -83,7 +106,13 @@ jobs:
           TASK_FILE: ${{ steps.find_task.outputs.task_file }}
         run: |
           if [ -f "$TASK_FILE" ]; then
-            sed -i 's/^status: pending/status: completed/' "$TASK_FILE"
+            if grep -q "^status:" "$TASK_FILE"; then
+              sed -i 's/^status: .*/status: completed/' "$TASK_FILE"
+            else
+              # No frontmatter — prepend it
+              echo -e "---\nstatus: completed\ndate: $(date +%Y-%m-%d)\n---\n" | cat - "$TASK_FILE" > /tmp/_task_tmp.md
+              mv /tmp/_task_tmp.md "$TASK_FILE"
+            fi
             echo "Marked as completed: $TASK_FILE"
           fi
 
@@ -94,14 +123,13 @@ jobs:
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git add "✅ Выполнено Claude/" "$TASK_FILE" 2>/dev/null || true
-          git add *Выполнено*/ 2>/dev/null || true
+          git add "✅ Выполнено Claude/" "📋 AI Делегат/" "$TASK_FILE" 2>/dev/null || true
+          git add *Выполнено*/ *Делегат*/ 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "Nothing to commit"
           else
             TASK_NAME=$(cat /tmp/agent_task_name.txt 2>/dev/null || echo "task")
             git commit -m "Agent report: ${TASK_NAME} [skip ci]"
-            # Rebase before push to handle concurrent vault-sync commits
             git pull --rebase origin main
             git push origin main
           fi
