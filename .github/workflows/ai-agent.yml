@@ -101,5 +101,7 @@ jobs:
           else
             TASK_NAME=$(cat /tmp/agent_task_name.txt 2>/dev/null || echo "task")
             git commit -m "Agent report: ${TASK_NAME} [skip ci]"
+            # Rebase before push to handle concurrent vault-sync commits
+            git pull --rebase origin main
             git push origin main
           fi
