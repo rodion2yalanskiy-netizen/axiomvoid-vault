@@ -26,4 +26,4 @@ Rebranding luxury stone website from **AURELIA** to **QSnera**, adding interacti
 - `assets/qsnera-divider.svg` — разделитель между секциями (6 мест)
 
 ---
-*Источник: [[Правки по сайту]] · Контент: [[QSNera_Content]] · Отчёт: [[Отчеты/Исправление_ошибок_сайта_2026-05-20]]*
+*Источник: [[_Archive/_duplicates/Правки по сайту]] · Контент: [[QSNera_Content]] · Отчёт: [[Отчеты/Исправление_ошибок_сайта_2026-05-20]]*
