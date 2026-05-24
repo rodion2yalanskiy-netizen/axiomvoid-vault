@@ -66,8 +66,13 @@ jobs:
           TASK_FILE: ${{ steps.find_task.outputs.task_file }}
         run: |
           if [ -f "$TASK_FILE" ]; then
-            sed -i 's/^status: .*/status: completed/' "$TASK_FILE" 2>/dev/null || \
-            printf -- "---\nstatus: completed\n---\n\n" | cat - "$TASK_FILE" > /tmp/_t.md && mv /tmp/_t.md "$TASK_FILE"
+            if grep -q "^status:" "$TASK_FILE"; then
+              sed -i 's/^status: .*/status: completed/' "$TASK_FILE"
+            else
+              printf -- "---\nstatus: completed\n---\n\n" | cat - "$TASK_FILE" > /tmp/_t.md
+              mv /tmp/_t.md "$TASK_FILE"
+            fi
+            echo "Marked: $TASK_FILE"
           fi
 
       - name: Commit result
