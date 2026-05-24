@@ -19,3 +19,5 @@
 
 # Плагины с embedded secrets
 .obsidian/plugins/remotely-save/
+node_modules/
+package-lock.json
