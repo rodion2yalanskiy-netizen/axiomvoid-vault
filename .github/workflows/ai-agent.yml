@@ -44,22 +44,27 @@ jobs:
             echo "Found (manual): $INPUT_FILE"
             exit 0
           fi
-          # Ищем задачи: status:pending ИЛИ без статуса (заметки с телефона)
+
+          # Ищем задачи по дате изменения (новые — первыми)
+          # Пропускаем: completed, archived, processing, skip
           TASK=""
-          for f in *AI*/*.md; do
+          while IFS= read -r f; do
             [ -f "$f" ] || continue
             [[ "$f" == *"README"* ]] && continue
             STATUS=$(grep -m1 "^status:" "$f" 2>/dev/null | awk '{print $2}')
-            [[ "$STATUS" == "completed" ]] && continue
-            [[ "$STATUS" == "archived" ]]  && continue
+            [[ "$STATUS" == "completed" ]]  && continue
+            [[ "$STATUS" == "archived" ]]   && continue
             [[ "$STATUS" == "processing" ]] && continue
+            [[ "$STATUS" == "skip" ]]       && continue
             TASK="$f"
             break
-          done
+          done < <(find *AI*/ -maxdepth 1 -name "*.md" -printf '%T@ %p\n' 2>/dev/null | sort -rn | awk '{print $2}')
+
           if [ -z "$TASK" ]; then
             echo "No pending tasks found"
             echo "task_file=" >> $GITHUB_OUTPUT
           else
+            STATUS=$(grep -m1 "^status:" "$TASK" 2>/dev/null | awk '{print $2}')
             echo "task_file=$TASK" >> $GITHUB_OUTPUT
             echo "Found: $TASK (status: ${STATUS:-none})"
           fi
@@ -109,8 +114,7 @@ jobs:
             if grep -q "^status:" "$TASK_FILE"; then
               sed -i 's/^status: .*/status: completed/' "$TASK_FILE"
             else
-              # No frontmatter — prepend it
-              echo -e "---\nstatus: completed\ndate: $(date +%Y-%m-%d)\n---\n" | cat - "$TASK_FILE" > /tmp/_task_tmp.md
+              printf -- "---\nstatus: completed\ndate: %s\n---\n\n" "$(date +%Y-%m-%d)" | cat - "$TASK_FILE" > /tmp/_task_tmp.md
               mv /tmp/_task_tmp.md "$TASK_FILE"
             fi
             echo "Marked as completed: $TASK_FILE"

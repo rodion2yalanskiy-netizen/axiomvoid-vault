@@ -1,5 +1,6 @@
 ---
 tags: [ai-pipeline, задачи]
+status: skip
 ---
 # 🤖 AI Задачи — как использовать
 
