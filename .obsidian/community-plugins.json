@@ -1,5 +1,6 @@
 [
   "obsidian-local-rest-api",
   "sync-setup-auto",
-  "remotely-save"
+  "remotely-save",
+  "obsidian-git"
 ]
