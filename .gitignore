@@ -16,3 +16,6 @@
 # Временные файлы
 *.tmp
 *.temp
+
+# Плагины с embedded secrets
+.obsidian/plugins/remotely-save/
