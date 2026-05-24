@@ -131,14 +131,41 @@ delegated_at: {datetime.now(timezone.utc).isoformat()}
     return str(f)
 
 
+def auto_detect_tool(content: str, declared_tool: str) -> str:
+    """
+    Если tool не указан явно — пытаемся определить по содержимому.
+    Задачи, которые требуют реального выполнения кода → code.
+    """
+    if declared_tool:
+        return declared_tool
+    # Паттерны задач для локального Claude Code
+    code_patterns = [
+        r"^\s*claude\s+",          # claude "..."
+        r"^\s*bash\s+",            # bash команда
+        r"исправ[ьи]\s+",          # исправь/исправи (файлы на диске)
+        r"создай\s+файл",          # создай файл
+        r"запиш[иь]\s+в\s+файл",   # запиши в файл
+        r"выполни\s+команду",      # выполни команду
+        r"git\s+(commit|push|add)", # git операции
+        r"npm\s+|pip\s+",          # пакетные менеджеры
+        r"~/|/Users/",             # абсолютные пути (работа с файлами)
+    ]
+    for pat in code_patterns:
+        if re.search(pat, content, re.IGNORECASE | re.MULTILINE):
+            print(f"🔍 Auto-detected tool: code (matched pattern: {pat!r})")
+            return "code"
+    return "openrouter"
+
+
 def main():
     task_path = find_task()
     task_name = task_path.stem
     raw = task_path.read_text(encoding="utf-8").strip()
 
-    tool    = get_field(raw, "tool") or "openrouter"
-    model   = get_field(raw, "model") or "anthropic/claude-sonnet-4.5"
-    content = strip_frontmatter(raw)
+    declared_tool = get_field(raw, "tool")
+    model         = get_field(raw, "model") or "anthropic/claude-sonnet-4.5"
+    content       = strip_frontmatter(raw)
+    tool          = auto_detect_tool(content, declared_tool)
 
     print(f"📄 Task: {task_name}")
     print(f"🔧 Tool: {tool}  |  Model: {model}")

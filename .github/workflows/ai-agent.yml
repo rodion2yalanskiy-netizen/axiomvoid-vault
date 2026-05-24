@@ -75,10 +75,25 @@ jobs:
         env:
           TASK_FILE: ${{ steps.find_task.outputs.task_file }}
         run: |
+          # Читаем явно указанный tool из frontmatter
           TOOL=$(grep -m1 "^tool:" "$TASK_FILE" 2>/dev/null | awk '{print $2}')
-          TOOL="${TOOL:-openrouter}"
+
+          # Auto-detect: если tool не указан, process_task.py сам определит
+          # Здесь мы только проверяем явные значения code/antigravity для
+          # правильного выбора шага Actions
+          if [ -z "$TOOL" ]; then
+            # Проверяем паттерны code-задач в содержимом файла
+            CONTENT=$(awk '/^---/{n++; if(n==2){found=1; next}} found{print}' "$TASK_FILE")
+            if echo "$CONTENT" | grep -qiE "^\s*claude\s+|~/|/Users/|git (commit|push)|создай файл|исправ[ьи] "; then
+              TOOL="code"
+              echo "🔍 Auto-detected: code (content pattern match)"
+            else
+              TOOL="openrouter"
+            fi
+          fi
+
           echo "tool=$TOOL" >> $GITHUB_OUTPUT
-          echo "Detected tool: $TOOL"
+          echo "✅ Tool: $TOOL (task: $TASK_FILE)"
 
       - name: Process task (cloud AI)
         if: |
