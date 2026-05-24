@@ -1,0 +1,199 @@
+name: QA Tester — Playwright site tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      review_status:
+        description: "Статус ревью (PASS/FAIL)"
+        required: false
+        default: "PASS"
+  schedule:
+    - cron: "0 8 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  qa-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install requests
+
+      - name: Install Playwright
+        run: |
+          npm install -D @playwright/test
+          npx playwright install chromium --with-deps
+
+      - name: Run Playwright tests
+        env:
+          SITE_URL: "https://premium-tiling.netlify.app"
+          REVIEW_STATUS: ${{ github.event.inputs.review_status || 'PASS' }}
+        run: |
+          cat > /tmp/qa-test.spec.js << 'SPECEOF'
+          const { test, expect } = require('@playwright/test');
+          const SITE = process.env.SITE_URL || 'https://premium-tiling.netlify.app';
+
+          test.describe('QSNera Site QA', () => {
+            test('Главная страница загружается', async ({ page }) => {
+              const response = await page.goto(SITE);
+              expect(response.status()).toBeLessThan(400);
+              await expect(page).toHaveTitle(/.+/);
+            });
+
+            test('Нет console.error', async ({ page }) => {
+              const errors = [];
+              page.on('console', msg => {
+                if (msg.type() === 'error') errors.push(msg.text());
+              });
+              await page.goto(SITE);
+              await page.waitForLoadState('networkidle');
+              expect(errors.filter(e => !e.includes('favicon'))).toHaveLength(0);
+            });
+
+            test('Мета-теги SEO присутствуют', async ({ page }) => {
+              await page.goto(SITE);
+              const description = await page.$eval(
+                'meta[name="description"]',
+                el => el.getAttribute('content')
+              ).catch(() => null);
+              expect(description).toBeTruthy();
+            });
+
+            test('Изображения имеют alt-тексты', async ({ page }) => {
+              await page.goto(SITE);
+              const imgs = await page.$$eval('img', imgs =>
+                imgs.filter(img => !img.getAttribute('alt')).length
+              );
+              expect(imgs).toBe(0);
+            });
+
+            test('Страница мобильно-адаптивна', async ({ page }) => {
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.goto(SITE);
+              const overflowX = await page.evaluate(() =>
+                document.documentElement.scrollWidth > document.documentElement.clientWidth
+              );
+              expect(overflowX).toBe(false);
+            });
+          });
+          SPECEOF
+
+          npx playwright test /tmp/qa-test.spec.js \
+            --reporter=json \
+            --output=/tmp/qa-results/ \
+            2>/tmp/qa-output.txt || true
+
+          echo "QA tests completed"
+
+      - name: Generate QA report
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          REVIEW_STATUS: ${{ github.event.inputs.review_status || 'PASS' }}
+        run: |
+          python3 << 'PYEOF'
+          import os, json, subprocess
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          now = datetime.now(timezone.utc)
+          date_str = now.strftime("%Y-%m-%d %H:%M UTC")
+          review_status = os.environ.get("REVIEW_STATUS", "PASS")
+
+          # Читаем результаты Playwright
+          qa_output = Path("/tmp/qa-output.txt").read_text(encoding="utf-8", errors="replace") if Path("/tmp/qa-output.txt").exists() else "Нет данных"
+
+          # Парсим JSON результаты если есть
+          passed = failed = 0
+          results_dir = Path("/tmp/qa-results")
+          for f in results_dir.glob("*.json"):
+              try:
+                  data = json.loads(f.read_text())
+                  for suite in data.get("suites", []):
+                      for spec in suite.get("specs", []):
+                          for test in spec.get("tests", []):
+                              if test.get("status") == "expected":
+                                  passed += 1
+                              else:
+                                  failed += 1
+              except Exception:
+                  pass
+
+          qa_pass = failed == 0
+          overall_pass = qa_pass and review_status == "PASS"
+
+          Path("/tmp/qa_status.txt").write_text("PASS" if overall_pass else "FAIL")
+          Path("/tmp/qa_overall.txt").write_text("PASS" if overall_pass else "FAIL")
+
+          # Создаём отчёт
+          Path("reports/qa").mkdir(parents=True, exist_ok=True)
+          day = now.strftime("%Y-%m-%d")
+
+          report = f"""---
+          title: QA Report {day}
+          date: {date_str}
+          status: {"pass" if overall_pass else "fail"}
+          tests_passed: {passed}
+          tests_failed: {failed}
+          review_status: {review_status}
+          type: qa
+          ---
+
+          # 🧪 QA Report
+
+          **Дата:** {date_str}
+          **Code Review:** {"✅ PASS" if review_status == "PASS" else "❌ FAIL"}
+          **Playwright Tests:** {"✅ PASS" if qa_pass else "❌ FAIL"} ({passed} passed, {failed} failed)
+          **Итог:** {"✅ ВСЁ OK" if overall_pass else "❌ НУЖНЫ ИСПРАВЛЕНИЯ"}
+
+          ## Детали тестов
+
+          ```
+          {qa_output[:2000]}
+          ```
+          """
+
+          import textwrap
+          report = textwrap.dedent(report)
+          Path(f"reports/qa/qa-{day}.md").write_text(report, encoding="utf-8")
+          print(f"✅ QA Report: {'PASS' if overall_pass else 'FAIL'} ({passed}/{passed+failed})")
+          PYEOF
+
+      - name: Commit QA report
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "QA: tests complete [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
+
+      - name: Trigger Sentinel
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const qa_status = fs.readFileSync('/tmp/qa_overall.txt', 'utf8').trim();
+            console.log(`QA status: ${qa_status}`);
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'sentinel.yml',
+              ref: 'main',
+              inputs: { qa_status }
+            });
