@@ -1,0 +1,86 @@
+name: Task Executor — tasks/ folder
+
+on:
+  push:
+    paths:
+      - "tasks/**/*.md"
+  workflow_dispatch:
+    inputs:
+      task_file:
+        description: "Путь к файлу задачи"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2}
+
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+
+      - run: pip install requests
+
+      - name: Find pending task
+        id: find_task
+        env:
+          INPUT_FILE: ${{ github.event.inputs.task_file }}
+        run: |
+          if [ -n "$INPUT_FILE" ] && [ -f "$INPUT_FILE" ]; then
+            echo "task_file=$INPUT_FILE" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          TASK=""
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            [[ "$(basename "$f")" == "README"* ]] && continue
+            STATUS=$(grep -m1 "^status:" "$f" 2>/dev/null | awk '{print $2}')
+            [[ "$STATUS" == "completed" || "$STATUS" == "skip" ]] && continue
+            TASK="$f"
+            break
+          done < <(ls -t tasks/*.md 2>/dev/null)
+          echo "task_file=$TASK" >> $GITHUB_OUTPUT
+          echo "Found task: $TASK"
+
+      - name: Execute task via OpenRouter
+        if: steps.find_task.outputs.task_file != ''
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TASK_FILE: ${{ steps.find_task.outputs.task_file }}
+        run: python3 scripts/process_task.py
+
+      - name: Save report
+        if: steps.find_task.outputs.task_file != ''
+        run: python3 scripts/save_to_vault.py
+
+      - name: Mark completed
+        if: steps.find_task.outputs.task_file != ''
+        env:
+          TASK_FILE: ${{ steps.find_task.outputs.task_file }}
+        run: |
+          if [ -f "$TASK_FILE" ]; then
+            sed -i 's/^status: .*/status: completed/' "$TASK_FILE" 2>/dev/null || \
+            printf -- "---\nstatus: completed\n---\n\n" | cat - "$TASK_FILE" > /tmp/_t.md && mv /tmp/_t.md "$TASK_FILE"
+          fi
+
+      - name: Commit result
+        if: steps.find_task.outputs.task_file != ''
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "Nothing to commit"
+          else
+            TASK_NAME=$(cat /tmp/agent_task_name.txt 2>/dev/null || echo "task")
+            git commit -m "Task executed: ${TASK_NAME} [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi

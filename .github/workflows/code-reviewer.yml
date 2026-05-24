@@ -1,0 +1,264 @@
+name: Code Reviewer — 9 parallel sub-agents
+
+on:
+  push:
+    paths:
+      - "site/**"
+      - "*.html"
+      - "*.css"
+      - "*.js"
+  workflow_dispatch:
+    inputs:
+      target_path:
+        description: "Путь к коду для проверки"
+        required: false
+        default: "."
+
+permissions:
+  contents: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    strategy:
+      fail-fast: false
+      matrix:
+        aspect:
+          - security
+          - performance
+          - logic
+          - style
+          - tests
+          - docs
+          - dependencies
+          - accessibility
+          - seo
+
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2}
+
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+
+      - run: pip install requests
+
+      - name: Review aspect — ${{ matrix.aspect }}
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ASPECT: ${{ matrix.aspect }}
+          TARGET: ${{ github.event.inputs.target_path || '.' }}
+        run: |
+          python3 << 'PYEOF'
+          import os
+          import requests
+          import subprocess
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          api_key = os.environ["OPENROUTER_API_KEY"]
+          aspect = os.environ["ASPECT"]
+          target = os.environ.get("TARGET", ".")
+
+          # Собираем изменённые файлы
+          try:
+              diff = subprocess.check_output(
+                  ["git", "diff", "HEAD~1", "HEAD", "--", "*.html", "*.css", "*.js", "*.py"],
+                  text=True, errors="replace"
+              )[:3000]
+          except Exception:
+              diff = "Нет данных git diff"
+
+          aspect_prompts = {
+              "security": "Проверь БЕЗОПАСНОСТЬ кода: XSS, инъекции, небезопасные операции, раскрытие данных",
+              "performance": "Проверь ПРОИЗВОДИТЕЛЬНОСТЬ: медленные операции, лишние запросы, неоптимальный код",
+              "logic": "Проверь ЛОГИКУ: баги, edge cases, неверная логика, потенциальные сбои",
+              "style": "Проверь СТИЛЬ кода: форматирование, naming conventions, читаемость",
+              "tests": "Проверь ТЕСТЫ: покрытие, edge cases без тестов, слабые тесты",
+              "docs": "Проверь ДОКУМЕНТАЦИЮ: отсутствующие комментарии, устаревший docs, README",
+              "dependencies": "Проверь ЗАВИСИМОСТИ: устаревшие пакеты, уязвимые версии, лишние deps",
+              "accessibility": "Проверь ДОСТУПНОСТЬ (a11y): ARIA атрибуты, контраст, keyboard nav",
+              "seo": "Проверь SEO: мета-теги, alt-тексты, структура заголовков, schema.org",
+          }
+
+          prompt = f"""Ты — специализированный ревьюер кода (аспект: {aspect.upper()}).
+
+          {aspect_prompts.get(aspect, f"Проверь {aspect}")}
+
+          ИЗМЕНЕНИЯ В КОДЕ:
+          {diff}
+
+          Выполни проверку и дай ответ в формате:
+          ## ✅/❌ {aspect.upper()} Review
+          **Оценка:** PASS / FAIL / WARNING
+          **Проблемы (если есть):**
+          - ...
+          **Рекомендации:**
+          - ...
+          """
+
+          resp = requests.post(
+              "https://openrouter.ai/api/v1/chat/completions",
+              headers={
+                  "Authorization": f"Bearer {api_key}",
+                  "HTTP-Referer": "https://github.com/rodion2yalanskiy-netizen/qsnera-vault",
+                  "X-Title": f"QSNera Code Reviewer — {aspect}",
+                  "Content-Type": "application/json",
+              },
+              json={
+                  "model": "anthropic/claude-sonnet-4.5",
+                  "messages": [{"role": "user", "content": prompt}],
+                  "max_tokens": 800,
+              },
+              timeout=60,
+          )
+          resp.raise_for_status()
+          result = resp.json()["choices"][0]["message"]["content"]
+
+          # Определяем статус
+          status = "PASS"
+          if "FAIL" in result.upper():
+              status = "FAIL"
+          elif "WARNING" in result.upper():
+              status = "WARNING"
+
+          # Сохраняем результат
+          Path("/tmp").mkdir(exist_ok=True)
+          Path(f"/tmp/review_{aspect}.txt").write_text(f"STATUS:{status}\n\n{result}", encoding="utf-8")
+          print(f"📋 {aspect}: {status}")
+          print(result[:500])
+          PYEOF
+
+      - name: Upload review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-${{ matrix.aspect }}
+          path: /tmp/review_${{ matrix.aspect }}.txt
+          retention-days: 1
+
+  collect-results:
+    runs-on: ubuntu-latest
+    needs: review
+    if: always()
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all review artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: review-*
+          path: /tmp/reviews/
+          merge-multiple: true
+
+      - name: Compile review report
+        run: |
+          DATE=$(date -u '+%Y-%m-%d %H:%M UTC')
+          mkdir -p reports/reviews
+
+          python3 << 'PYEOF'
+          from pathlib import Path
+          import re
+          from datetime import datetime, timezone
+
+          now = datetime.now(timezone.utc)
+          date_str = now.strftime("%Y-%m-%d %H:%M UTC")
+          reviews_dir = Path("/tmp/reviews")
+
+          aspects = ["security", "performance", "logic", "style", "tests",
+                     "docs", "dependencies", "accessibility", "seo"]
+          results = {}
+          all_pass = True
+
+          for aspect in aspects:
+              f = reviews_dir / f"review_{aspect}.txt"
+              if f.exists():
+                  content = f.read_text(encoding="utf-8")
+                  m = re.match(r"STATUS:(\w+)\n\n(.*)", content, re.DOTALL)
+                  if m:
+                      status = m.group(1)
+                      body = m.group(2)
+                  else:
+                      status = "UNKNOWN"
+                      body = content
+                  results[aspect] = {"status": status, "body": body}
+                  if status == "FAIL":
+                      all_pass = False
+              else:
+                  results[aspect] = {"status": "MISSING", "body": "Нет данных"}
+
+          # Иконки статусов
+          icons = {"PASS": "✅", "FAIL": "❌", "WARNING": "⚠️", "UNKNOWN": "❓", "MISSING": "⚫"}
+
+          # Общий статус
+          overall = "✅ ВСЕ ПРОВЕРКИ ПРОШЛИ" if all_pass else "❌ ОБНАРУЖЕНЫ ПРОБЛЕМЫ"
+
+          report = f"""---
+          title: Code Review Report
+          date: {date_str}
+          status: {"pass" if all_pass else "fail"}
+          type: review
+          ---
+
+          # 🔍 Code Review Report
+
+          **Дата:** {date_str}
+          **Итог:** {overall}
+
+          ## Сводка
+
+          | Аспект | Статус |
+          |--------|--------|
+          """ + "\n".join(
+              f"| {asp} | {icons.get(r['status'], '❓')} {r['status']} |"
+              for asp, r in results.items()
+          ) + "\n\n## Детальные результаты\n\n"
+
+          for asp, r in results.items():
+              report += f"### {icons.get(r['status'],'❓')} {asp.upper()}\n\n{r['body']}\n\n---\n\n"
+
+          # Убираем отступы
+          import textwrap
+          report = textwrap.dedent(report)
+
+          day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+          report_path = Path(f"reports/reviews/review-{day}.md")
+          report_path.write_text(report, encoding="utf-8")
+
+          # Сохраняем итоговый статус для Sentinel
+          Path("/tmp/review_overall.txt").write_text("PASS" if all_pass else "FAIL")
+          print(f"📋 Report saved: {report_path}")
+          print(f"🔍 Overall: {'PASS' if all_pass else 'FAIL'}")
+          PYEOF
+
+      - name: Commit review report
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Review: code analysis complete [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
+
+      - name: Trigger QA Tester
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const overall = require('fs').readFileSync('/tmp/review_overall.txt', 'utf8').trim();
+            console.log(`Review overall: ${overall}`);
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'qa-tester.yml',
+              ref: 'main',
+              inputs: { review_status: overall }
+            });

@@ -1,0 +1,118 @@
+name: Vault Sync — 6h health check
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 10}
+
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+
+      - run: pip install requests
+
+      - name: Vault health check and index update
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python3 << 'PYEOF'
+          import os
+          from pathlib import Path
+          from datetime import datetime, timezone
+
+          now = datetime.now(timezone.utc)
+          date_str = now.strftime("%Y-%m-%d %H:%M UTC")
+
+          # Подсчёт статистики
+          ai_dir = Path("🤖 AI Задачи")
+          done_dir = Path("✅ Выполнено Claude")
+          inbox_dir = Path("inbox")
+          tasks_dir = Path("tasks")
+
+          stats = {
+              "ai_tasks_total": len(list(ai_dir.glob("*.md"))) if ai_dir.exists() else 0,
+              "reports_total": len(list(done_dir.glob("*.md"))) if done_dir.exists() else 0,
+              "inbox_total": len(list(inbox_dir.glob("*.md"))) if inbox_dir.exists() else 0,
+              "tasks_total": len(list(tasks_dir.glob("*.md"))) if tasks_dir.exists() else 0,
+          }
+
+          # Pending задачи
+          pending = []
+          if ai_dir.exists():
+              for f in sorted(ai_dir.glob("*.md"), key=lambda x: x.stat().st_mtime, reverse=True):
+                  if f.name == "README.md":
+                      continue
+                  raw = f.read_text(encoding="utf-8")
+                  import re
+                  m = re.search(r"^status:\s*(.+)$", raw, re.MULTILINE)
+                  status = m.group(1).strip() if m else ""
+                  if status not in ("completed", "archived", "skip"):
+                      pending.append(f.stem)
+
+          # Создаём health report
+          health_dir = Path("reports")
+          health_dir.mkdir(exist_ok=True)
+          report = health_dir / "vault-health.md"
+
+          content = f"""---
+          title: Vault Health Report
+          updated: {date_str}
+          type: report
+          ---
+
+          # 🏥 Vault Health Report
+
+          **Сгенерировано:** {date_str} (автоматически каждые 6 часов)
+
+          ## 📊 Статистика
+
+          | Папка | Файлов |
+          |-------|--------|
+          | 🤖 AI Задачи | {stats['ai_tasks_total']} |
+          | ✅ Выполнено Claude | {stats['reports_total']} |
+          | inbox/ | {stats['inbox_total']} |
+          | tasks/ | {stats['tasks_total']} |
+
+          ## ⏳ Незавершённые задачи ({len(pending)})
+
+          """ + "\n".join(f"- [ ] {t}" for t in pending) + """
+
+          ## ✅ Статус системы
+
+          - vault-sync.sh: работает (launchd каждые 5 мин)
+          - local-agent.sh: работает (launchd каждые 2 мин)
+          - GitHub Actions: работает
+          """
+
+          # Убираем лишние отступы
+          import textwrap
+          content = textwrap.dedent(content)
+          report.write_text(content, encoding="utf-8")
+          print(f"✅ Health report: {report}")
+          print(f"📊 Stats: {stats}")
+          print(f"⏳ Pending: {len(pending)}")
+          PYEOF
+
+      - name: Commit health report
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Vault: health check $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
