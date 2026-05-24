@@ -101,7 +101,7 @@ def generate_images_together(prompt, n=1):
         "Authorization": f"Bearer {TOGETHER_KEY}",
         "Content-Type": "application/json",
     }, json={
-        "model": "black-forest-labs/FLUX.1-schnell-Free",
+        "model": "black-forest-labs/FLUX.1-schnell",
         "prompt": prompt,
         "n": n,
         "width": 1024,
