@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
 save_to_vault.py — Сохраняет ответ агента в '✅ Выполнено Claude/' vault'а.
-Формат файла совпадает с тем, что создавал локальный пайплайн.
+
+ПРАВИЛО ИМЕНОВАНИЯ (постоянное):
+  Имя файла = "Отчёт: {название заметки из 🤖 AI Задачи}.md"
+  Пример:    "Отчёт: Что ты умеешь.md"
+  Пример:    "Отчёт: Пост для Instagram.md"
 """
 
 import sys
@@ -10,46 +14,53 @@ from pathlib import Path
 
 
 def main():
-    response_file = Path("/tmp/agent_response.txt")
-    task_name_file = Path("/tmp/agent_task_name.txt")
-    task_path_file = Path("/tmp/agent_task_file.txt")
+    response_file   = Path("/tmp/agent_response.txt")
+    task_name_file  = Path("/tmp/agent_task_name.txt")
+    task_path_file  = Path("/tmp/agent_task_file.txt")
 
     if not response_file.exists():
         print("❌ /tmp/agent_response.txt не найден")
         sys.exit(1)
 
-    response = response_file.read_text(encoding="utf-8").strip()
-    task_name = task_name_file.read_text(encoding="utf-8").strip() if task_name_file.exists() else "task"
+    response  = response_file.read_text(encoding="utf-8").strip()
+    task_name = task_name_file.read_text(encoding="utf-8").strip() if task_name_file.exists() else "Задача"
     task_path = task_path_file.read_text(encoding="utf-8").strip() if task_path_file.exists() else ""
 
-    now = datetime.now(timezone.utc)
+    now      = datetime.now(timezone.utc)
     date_str = now.strftime("%Y-%m-%d")
-    time_str = now.strftime("%H%M")
+    time_str = now.strftime("%H:%M UTC")
 
-    # Имя файла в формате существующих отчётов
-    safe_name = task_name.replace(" ", "_").replace("/", "-")[:40]
-    filename = f"Отчёт_{date_str}_ТЗ_{date_str}_{safe_name}_{time_str}.md"
+    # ─────────────────────────────────────────────────────────
+    # ПРАВИЛО: имя отчёта = "Отчёт: {название заметки}.md"
+    # Название берётся из имени файла задачи (без расширения)
+    # Недопустимые символы для файловой системы убираются
+    # ─────────────────────────────────────────────────────────
+    safe_name = task_name.replace("/", "-").replace("\\", "-").replace(":", " —")
+    filename  = f"Отчёт: {safe_name}.md"
 
-    report_dir = Path("✅ Выполнено Claude")
+    report_dir  = Path("✅ Выполнено Claude")
     report_dir.mkdir(exist_ok=True)
     report_path = report_dir / filename
+
+    # Если отчёт с таким именем уже есть — добавляем дату чтобы не перезаписать
+    if report_path.exists():
+        filename  = f"Отчёт: {safe_name} ({date_str}).md"
+        report_path = report_dir / filename
 
     content = f"""---
 task: {task_name}
 source_file: {task_path}
 date: {date_str}
-time: {time_str} UTC
+time: {time_str}
 status: completed
 source: github-actions
-model: anthropic/claude-sonnet-4.5
 tags: [выполнено, ai-pipeline]
 ---
 
-# ✅ {task_name}
+# ✅ Отчёт: {task_name}
 
-**Дата:** {date_str} {time_str} UTC
-**Статус:** ✅ Выполнено
-**Источник:** GitHub Actions + OpenRouter
+**Дата:** {date_str} {time_str}
+**Задача:** [[{task_name}]]
 
 ---
 
