@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 tool: images
 date: 2026-05-23
 source: integration-test
