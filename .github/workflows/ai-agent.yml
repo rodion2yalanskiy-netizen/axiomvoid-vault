@@ -46,7 +46,7 @@ jobs:
           fi
 
           # Ищем задачи по дате изменения (новые — первыми)
-          # Пропускаем: completed, archived, processing, skip
+          # ls -t сортирует по времени, корректно работает с пробелами и Unicode
           TASK=""
           while IFS= read -r f; do
             [ -f "$f" ] || continue
@@ -58,7 +58,7 @@ jobs:
             [[ "$STATUS" == "skip" ]]       && continue
             TASK="$f"
             break
-          done < <(find *AI*/ -maxdepth 1 -name "*.md" -printf '%T@ %p\n' 2>/dev/null | sort -rn | awk '{print $2}')
+          done < <(ls -t *AI*/*.md 2>/dev/null)
 
           if [ -z "$TASK" ]; then
             echo "No pending tasks found"
