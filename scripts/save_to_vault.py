@@ -42,10 +42,19 @@ def main():
     report_dir.mkdir(exist_ok=True)
     report_path = report_dir / filename
 
-    # Если отчёт с таким именем уже есть — добавляем дату чтобы не перезаписать
+    # Если отчёт с таким именем уже есть — проверяем: это старый мусор или валидный отчёт?
     if report_path.exists():
-        filename  = f"Отчёт: {safe_name} ({date_str}).md"
-        report_path = report_dir / filename
+        existing = report_path.read_text(encoding="utf-8")
+        # Если старый файл содержит мусор (fake function_calls) — перезаписываем его
+        if "<function_calls>" in existing or "<invoke name=" in existing:
+            print(f"⚠️  Перезаписываем мусорный отчёт: {filename}")
+            # report_path остаётся прежним — перезапишем его
+        else:
+            # Валидный дубликат — добавляем время
+            time_suffix = now.strftime("%H%M")
+            filename  = f"Отчёт: {safe_name} ({date_str} {time_suffix}).md"
+            report_path = report_dir / filename
+            print(f"📋 Дубликат → {filename}")
 
     content = f"""---
 task: {task_name}
