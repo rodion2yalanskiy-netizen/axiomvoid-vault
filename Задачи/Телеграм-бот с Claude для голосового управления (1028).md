@@ -1,7 +1,7 @@
 ---
 type: task
 tool: code
-status: processing
+status: failed
 date: 2026-05-25
 source: telegram-bot
 ---
