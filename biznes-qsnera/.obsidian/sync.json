@@ -1,0 +1,32 @@
+{
+  "vaultId": "5495a8fbf4718f27f519d958278c5e32",
+  "vaultName": "biznes-qsnera",
+  "encryptionVersion": 0,
+  "host": "sync-58.obsidian.md",
+  "deviceName": "Mac",
+  "userId": -1,
+  "pause": false,
+  "version": 0,
+  "initial": true,
+  "local": {},
+  "remote": {},
+  "pending": [],
+  "appId": "a35e3aa66101f931",
+  "allowTypes": [
+    "image",
+    "audio",
+    "pdf",
+    "video"
+  ],
+  "allowSpecialFiles": [
+    "app",
+    "appearance",
+    "appearance-data",
+    "hotkey",
+    "core-plugin",
+    "core-plugin-data"
+  ],
+  "ignoreFolders": [],
+  "preventSleep": false,
+  "conflictAction": "merge"
+}
