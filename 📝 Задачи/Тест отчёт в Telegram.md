@@ -1,7 +1,7 @@
 ---
 type: task
 tool: code
-status: processing
+status: completed
 task_name: Тест отчёт в Telegram
 date: 2026-05-25
 source: telegram-bot
