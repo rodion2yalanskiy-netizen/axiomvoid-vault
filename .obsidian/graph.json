@@ -1,11 +1,11 @@
 {
-  "collapse-filter": false,
+  "collapse-filter": true,
   "search": "",
-  "showTags": true,
-  "showAttachments": true,
+  "showTags": false,
+  "showAttachments": false,
   "hideUnresolved": false,
   "showOrphans": true,
-  "collapse-color-groups": false,
+  "collapse-color-groups": true,
   "colorGroups": [],
   "collapse-display": true,
   "showArrow": false,
@@ -17,14 +17,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-  "scale": 0.4964522738224083,
-=======
-  "scale": 2.027466433126503,
->>>>>>> Stashed changes
-=======
-  "scale": 2.027466433126503,
->>>>>>> Stashed changes
-  "close": true
+  "scale": 1,
+  "close": false
 }
