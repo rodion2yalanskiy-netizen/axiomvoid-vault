@@ -1,8 +1,11 @@
-# Obsidian системные файлы
+# Obsidian системные файлы (НЕ в git — device-specific!)
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .obsidian/cache
 .obsidian/graph-cache.json
+# КРИТИЧНО: sync.json содержит userId и токен аутентификации Obsidian Sync.
+# Если этот файл в git → git pull каждые 5 мин сбрасывает авторизацию → iPhone не синхронизируется!
+.obsidian/sync.json
 
 # macOS
 .DS_Store
