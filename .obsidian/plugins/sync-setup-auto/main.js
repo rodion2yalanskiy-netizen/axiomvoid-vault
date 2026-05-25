@@ -1,34 +1,55 @@
-// sync-setup-auto v2 — Бизнес QSNera
+// sync-setup-auto v3 — Бизнес QSNera (full debug)
 const obsidian = require('obsidian');
+const fs = require('fs');
 
 const VAULT_ID   = '5495a8fbf4718f27f519d958278c5e32';
 const VAULT_NAME = 'biznes-qsnera';
-const VAULT_SALT = 'ffb9ceb496dcbbffb2193d1fd9f3f188';
 const HOST       = 'sync-58.obsidian.md';
+const LOG        = '/tmp/obsidian-sync-debug.log';
+
+function log(msg) {
+    const line = new Date().toISOString() + ' [biznes] ' + msg + '\n';
+    try { fs.appendFileSync(LOG, line); } catch(e) {}
+    console.log('[SyncSetup]', msg);
+}
 
 class SyncSetupPlugin extends obsidian.Plugin {
     async onload() {
-        console.log('[SyncSetup] Loaded — ' + VAULT_NAME);
+        log('Plugin loaded');
         this.app.workspace.onLayoutReady(() => this.doSetup());
     }
 
     async doSetup() {
         try {
-            const syncPlugin = this.app.internalPlugins?.plugins?.sync?.instance;
-            if (!syncPlugin) {
-                console.warn('[SyncSetup] Sync plugin not found');
+            const sync = this.app.internalPlugins?.plugins?.sync?.instance;
+            if (!sync) { log('ERROR: No sync plugin found'); return; }
+
+            log('State: userId=' + sync.userId + ' vaultId=' + (sync.vaultId||'null'));
+
+            if (sync.userId && sync.userId > 0) {
+                log('Already connected! userId=' + sync.userId);
                 return;
             }
-            // userId > 0 = уже авторизован через Obsidian Sync
-            if (syncPlugin.userId && syncPlugin.userId > 0) {
-                console.log('[SyncSetup] Already connected, userId=' + syncPlugin.userId);
-                return;
+
+            // Логируем доступные методы
+            const proto = Object.getPrototypeOf(sync);
+            const methods = Object.getOwnPropertyNames(proto).filter(m => typeof sync[m] === 'function');
+            log('Methods: ' + methods.slice(0, 20).join(', '));
+
+            // Пробуем getSharedVaults
+            if (typeof sync.getSharedVaults === 'function') {
+                try {
+                    const vaults = await sync.getSharedVaults();
+                    log('Remote vaults: ' + JSON.stringify(vaults));
+                } catch(ev) { log('getSharedVaults error: ' + ev.message); }
             }
-            console.log('[SyncSetup] Connecting to remote vault...');
-            await syncPlugin.setup(VAULT_ID, VAULT_NAME, '', VAULT_SALT, HOST, 3);
-            console.log('[SyncSetup] Setup complete! userId=' + syncPlugin.userId);
+
+            log('Calling setup...');
+            await sync.setup(VAULT_ID, VAULT_NAME, '', '', HOST, 3);
+            log('Setup complete! userId=' + sync.userId);
+
         } catch (e) {
-            console.error('[SyncSetup] Setup failed:', e.message || e);
+            log('Setup failed: ' + (e.message || String(e)));
         }
     }
 

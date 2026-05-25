@@ -1,9 +1,7 @@
 {
   "vaultId": "5495a8fbf4718f27f519d958278c5e32",
   "vaultName": "biznes-qsnera",
-  "encryptionVersion": 3,
-  "key": "WCmuwaEUl+LvWGUDuJm6Osk6EZ61dyu8z5VfzsUftuI=",
-  "salt": "ffb9ceb496dcbbffb2193d1fd9f3f188",
+  "encryptionVersion": 0,
   "host": "sync-58.obsidian.md",
   "deviceName": "Mac",
   "userId": -1,
