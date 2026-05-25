@@ -47,7 +47,7 @@ def find_task():
         if p.exists():
             return p
         print(f"⚠️  File not found: {TASK_FILE}")
-    tasks_dir = Path("🤖 AI Задачи")
+    tasks_dir = Path("📝 Задачи")
     files = sorted(
         [f for f in tasks_dir.glob("*.md") if f.name != "README.md"],
         key=lambda f: f.stat().st_mtime, reverse=True
@@ -113,8 +113,8 @@ def generate_images_together(prompt, n=1):
 
 
 def delegate_local(content, task_name, tool):
-    """Write delegated task to 📋 AI Делегат/ for local Mac agent."""
-    d = Path("📋 AI Делегат")
+    """Write delegated task to 📝 Задачи/ for local Mac agent."""
+    d = Path("📝 Задачи")
     d.mkdir(exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     f = d / f"делегат_{ts}_{task_name}.md"
