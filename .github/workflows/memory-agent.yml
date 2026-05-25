@@ -24,9 +24,9 @@ jobs:
           DAY=$(date -u '+%Y-%m-%d')
 
           # Считаем статистику
-          TOTAL_TASKS=$(ls "🤖 AI Задачи/"*.md 2>/dev/null | grep -v README | wc -l | tr -d ' ')
-          COMPLETED=$(ls "🤖 AI Задачи/"*.md 2>/dev/null | xargs grep -l "^status: completed" 2>/dev/null | wc -l | tr -d ' ')
-          REPORTS=$(ls "✅ Выполнено Claude/"*.md 2>/dev/null | wc -l | tr -d ' ')
+          TOTAL_TASKS=$(ls "Задачи/"*.md 2>/dev/null | grep -v README | wc -l | tr -d ' ')
+          COMPLETED=$(ls "Задачи/"*.md 2>/dev/null | xargs grep -l "^status: completed" 2>/dev/null | wc -l | tr -d ' ')
+          REPORTS=$(ls "Отчёты/"*.md 2>/dev/null | wc -l | tr -d ' ')
           INBOX=$(ls inbox/*.md 2>/dev/null | wc -l | tr -d ' ')
           TASKS=$(ls tasks/*.md 2>/dev/null | grep -v README | wc -l | tr -d ' ')
 
@@ -66,7 +66,7 @@ jobs:
 
           ## 📋 Последние отчёты
 
-          $(ls -t "✅ Выполнено Claude/"*.md 2>/dev/null | head -5 | while read f; do echo "- $(basename "$f" .md)"; done)
+          $(ls -t "Отчёты/"*.md 2>/dev/null | head -5 | while read f; do echo "- $(basename "$f" .md)"; done)
 
           ## ⏳ Незавершённые задачи AI Задачи
 
@@ -76,7 +76,7 @@ jobs:
             STATUS=$(grep -m1 "^status:" "$f" 2>/dev/null | awk '{print $2}')
             [[ "$STATUS" == "completed" || "$STATUS" == "archived" || "$STATUS" == "skip" ]] && continue
             echo "- [ ] $(basename "$f" .md)"
-          done < <(ls -t "🤖 AI Задачи/"*.md 2>/dev/null))
+          done < <(ls -t "Задачи/"*.md 2>/dev/null))
           STATEOF
 
           echo "✅ memory/session-state.md обновлён"
