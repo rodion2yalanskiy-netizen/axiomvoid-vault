@@ -30,3 +30,7 @@ memory/
 reports/
 package.json
 package-lock.json
+
+# Emoji-папки от Obsidian/iPhone — задачи туда не выполняются!
+# vault-sync.sh авто-переносит файлы и удаляет эти папки
+📝 Задачи/
