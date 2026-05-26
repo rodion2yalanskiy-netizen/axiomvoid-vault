@@ -23,11 +23,11 @@ auto: true
 ## 🕐 Последние коммиты
 
 ```
+445d4f8 test cleanup: Клиенты/Тест-заметка-бот.md
+720c93f Agent report: Тест-задача-бот (2359) [skip ci]
+000b78f Memory: session state updated [skip ci]
 2ab4f50 task(code): Тест-задача-бот
 00ef86e test: Тест-заметка-бот
-eb1595f Memory: session state updated [skip ci]
-72fac62 note: Инструкция по работе с AI-ассистентом Obsidian
-7dfbd7b Memory: session state updated [skip ci]
 ```
 
 ## 📋 Последние отчёты
@@ -40,4 +40,4 @@ eb1595f Memory: session state updated [skip ci]
 
 ## ⏳ Незавершённые задачи AI Задачи
 
-- [ ] Тест-задача-бот (2359)
+
