@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
 """
-save_to_vault.py — Сохраняет ответ агента в '✅ Выполнено Claude/' vault'а.
+save_to_vault.py — Сохраняет ответ агента в 'Отчёты/' vault'а.
 
 ПРАВИЛО ИМЕНОВАНИЯ (постоянное):
-  Имя файла = "Отчёт: {название заметки из 🤖 AI Задачи}.md"
-  Пример:    "Отчёт: Что ты умеешь.md"
-  Пример:    "Отчёт: Пост для Instagram.md"
+  Имя файла = "Отчёт - {название задачи}.md"
+  Пример:    "Отчёт - Что ты умеешь.md"
+  Пример:    "Отчёт - Пост для Instagram.md"
+
+⚠️ ЗАПРЕЩЕНО: создавать папки с эмоджи (✅ 📝 👥 💡 🏗 🤖)
+   Разрешённые папки: Отчёты/ Задачи/ Клиенты/ Маркетинг/ Сайт/ Архив/
 """
 
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+
+# ─── КОНСТАНТЫ АРХИТЕКТУРЫ (не менять!) ───────────────────────────────────────
+REPORT_DIR = "Отчёты"   # Единственная папка для отчётов GitHub Actions
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 def main():
@@ -31,14 +39,22 @@ def main():
     time_str = now.strftime("%H:%M UTC")
 
     # ─────────────────────────────────────────────────────────
-    # ПРАВИЛО: имя отчёта = "Отчёт: {название заметки}.md"
+    # ПРАВИЛО: имя отчёта = "Отчёт - {название задачи}.md"
     # Название берётся из имени файла задачи (без расширения)
+    # Разделитель: дефис " - " (не двоеточие, не эмоджи)
     # Недопустимые символы для файловой системы убираются
     # ─────────────────────────────────────────────────────────
-    safe_name = task_name.replace("/", "-").replace("\\", "-").replace(":", " —")
-    filename  = f"Отчёт: {safe_name}.md"
+    safe_name = (
+        task_name
+        .replace("/", "-")
+        .replace("\\", "-")
+        .replace(":", " -")
+        .strip()
+    )
+    filename  = f"Отчёт - {safe_name}.md"
 
-    report_dir  = Path("✅ Выполнено Claude")
+    # Используем ТОЛЬКО разрешённую папку Отчёты/ (без эмоджи!)
+    report_dir  = Path(REPORT_DIR)
     report_dir.mkdir(exist_ok=True)
     report_path = report_dir / filename
 
@@ -52,7 +68,7 @@ def main():
         else:
             # Валидный дубликат — добавляем время
             time_suffix = now.strftime("%H%M")
-            filename  = f"Отчёт: {safe_name} ({date_str} {time_suffix}).md"
+            filename  = f"Отчёт - {safe_name} ({date_str} {time_suffix}).md"
             report_path = report_dir / filename
             print(f"📋 Дубликат → {filename}")
 
@@ -66,7 +82,7 @@ source: github-actions
 tags: [выполнено, ai-pipeline]
 ---
 
-# ✅ Отчёт: {task_name}
+# Отчёт: {task_name}
 
 **Дата:** {date_str} {time_str}
 **Задача:** [[{task_name}]]
@@ -77,7 +93,7 @@ tags: [выполнено, ai-pipeline]
 """
 
     report_path.write_text(content, encoding="utf-8")
-    print(f"📄 Отчёт сохранён: {report_path}")
+    print(f"📄 Отчёт сохранён: {REPORT_DIR}/{filename}")
 
 
 if __name__ == "__main__":

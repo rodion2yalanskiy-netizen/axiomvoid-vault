@@ -47,13 +47,15 @@ def find_task():
         if p.exists():
             return p
         print(f"⚠️  File not found: {TASK_FILE}")
-    tasks_dir = Path("📝 Задачи")
+    # ⚠️ ПРАВИЛО: ТОЛЬКО папка "Задачи/" без эмоджи!
+    # Запрещено: "📝 Задачи", "🤖 AI Задачи" — ломают iOS Obsidian Sync
+    tasks_dir = Path("Задачи")
     files = sorted(
         [f for f in tasks_dir.glob("*.md") if f.name != "README.md"],
         key=lambda f: f.stat().st_mtime, reverse=True
     )
     if not files:
-        print("❌ No tasks found")
+        print("❌ No tasks found in Задачи/")
         sys.exit(1)
     return files[0]
 
@@ -113,8 +115,10 @@ def generate_images_together(prompt, n=1):
 
 
 def delegate_local(content, task_name, tool):
-    """Write delegated task to 📝 Задачи/ for local Mac agent."""
-    d = Path("📝 Задачи")
+    """Write delegated task to Задачи/ for local Mac agent.
+    ⚠️ ПРАВИЛО: папка ТОЛЬКО "Задачи/" без эмоджи! Не менять на "📝 Задачи"!
+    """
+    d = Path("Задачи")   # ← без эмоджи! iOS Obsidian Sync не поддерживает emoji в именах папок
     d.mkdir(exist_ok=True)
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     f = d / f"делегат_{ts}_{task_name}.md"
