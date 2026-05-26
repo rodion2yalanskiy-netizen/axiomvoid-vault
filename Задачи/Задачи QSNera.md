@@ -1,7 +1,7 @@
 ---
 type: task
 tool: code
-status: pending
+status: delegated
 date: 2026-05-26
 source: telegram-bot
 ---
