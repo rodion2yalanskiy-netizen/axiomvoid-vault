@@ -1,7 +1,7 @@
 ---
 type: task
 tool: code
-status: timeout
+status: processing
 date: 2026-05-26
 source: telegram-bot
 task_name: Исправить распознавание голоса в Telegram-боте
