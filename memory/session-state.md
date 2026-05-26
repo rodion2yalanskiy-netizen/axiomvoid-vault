@@ -1,20 +1,20 @@
 ---
 title: Session State
-updated: 2026-05-26 05:59 UTC
+updated: 2026-05-26 06:44 UTC
 type: memory
 auto: true
 ---
 
 # 🔄 Session State
 
-**Обновлено:** 2026-05-26 05:59 UTC
+**Обновлено:** 2026-05-26 06:44 UTC
 **Ветка:** main
 
 ## 📊 Статистика vault'а
 
 | Метрика | Значение |
 |---------|---------|
-| AI Задачи (всего) | 0 |
+| AI Задачи (всего) | 1 |
 | Завершено | 0 |
 | Отчёты в ✅ | 11 |
 | Inbox | 0 |
@@ -23,11 +23,11 @@ auto: true
 ## 🕐 Последние коммиты
 
 ```
+a223a7a vault sync 2026-05-25 23:43
+0d6978a fix: перенос задачи в правильную папку, удаление стейл файлов [skip ci]
+00f029d Memory: session state updated [skip ci]
 d01d58b vault sync 2026-05-25 22:58
 e51af88 Memory: session state updated [skip ci]
-8e466b1 task: Исправить распознавание голоса в Telegram-боте
-7d36b9f Memory: session state updated [skip ci]
-1daac39 test cleanup: Задачи/Тест-задача-бот (2359).md
 ```
 
 ## 📋 Последние отчёты
@@ -40,4 +40,4 @@ e51af88 Memory: session state updated [skip ci]
 
 ## ⏳ Незавершённые задачи AI Задачи
 
-
+- [ ] Исправить распознавание голоса в Telegram-боте
