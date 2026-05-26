@@ -24,3 +24,9 @@
 .obsidian/plugins/remotely-save/
 node_modules/
 package-lock.json
+
+# Технические папки (не должны быть в Obsidian/GitHub)
+memory/
+reports/
+package.json
+package-lock.json
