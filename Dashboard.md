@@ -1,12 +1,12 @@
 ---
-title: QSNera — Дашборд
-updated: 2026-05-26
+title: Axiom:Void — Дашборд бизнеса
+updated: 2026-05-28
 type: dashboard
 ---
 
-# 🏢 QSNera — Бизнес
+# 🏢 Axiom:Void — Бизнес
 
-> Премиум укладка плитки и натурального камня
+> Веб-разработка и цифровые продукты | axiom-void.dev
 
 ## 🗂 Структура
 
