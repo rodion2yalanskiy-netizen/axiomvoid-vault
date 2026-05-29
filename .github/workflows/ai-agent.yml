@@ -51,10 +51,13 @@ jobs:
           while IFS= read -r f; do
             [ -f "$f" ] || continue
             [[ "$f" == *"README"* ]] && continue
+            [[ "$(basename "$f")" == делегат_* ]] && continue
             STATUS=$(grep -m1 "^status:" "$f" 2>/dev/null | awk '{print $2}')
             [[ "$STATUS" == "completed" ]]  && continue
             [[ "$STATUS" == "archived" ]]   && continue
             [[ "$STATUS" == "processing" ]] && continue
+            [[ "$STATUS" == "timeout" ]]    && continue
+            [[ "$STATUS" == "failed" ]]     && continue
             [[ "$STATUS" == "skip" ]]       && continue
             TASK="$f"
             break

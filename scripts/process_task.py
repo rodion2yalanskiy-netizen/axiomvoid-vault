@@ -202,6 +202,11 @@ def main():
     # === ROUTING ===
 
     if tool in ("code", "antigravity"):
+        # Не перепеределегировать файлы уже созданные делегацией
+        if task_name.startswith("делегат_"):
+            print(f"⚠️  Пропускаем перепеределегацию файла: {task_name}")
+            Path("/tmp/agent_response.txt").write_text("Skipped re-delegation.")
+            return
         # Delegate to local Mac agent — Actions only creates the delegation file
         delegate_path = delegate_local(content, task_name, tool)
         response = (
