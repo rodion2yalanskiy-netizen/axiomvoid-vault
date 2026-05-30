@@ -43,6 +43,14 @@ task_name: Название
 | vault-guardian | Mac | каждые 10 мин |
 | vault-sync | Mac | каждые 5 мин |
 
+## CRM Статус
+- Шаблон клиента: ✅
+- CRM-Обзор: ✅
+- /newclient команда: ✅
+- /invoice команда: ✅
+- crm-sync агент: ✅
+- Stripe live: ✅
+
 ## 🎨 Стиль Axiom:Void
 - Фон: `#1a1a1a` | Золото: `#d4a843`
 - Playfair Display + Inter
