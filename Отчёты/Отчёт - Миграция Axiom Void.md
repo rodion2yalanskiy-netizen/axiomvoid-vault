@@ -1,5 +1,5 @@
 ---
-task: Миграция QSNera → Axiom:Void
+task: Миграция Axiom:Void → Axiom:Void
 date: 2026-05-28
 time: 01:15 local
 status: partially_completed
@@ -9,7 +9,7 @@ tool: claude-code
 tags: [миграция, axiom-void, qsnera, ребрендинг]
 ---
 
-# ✅ Отчёт: Миграция QSNera → Axiom:Void
+# ✅ Отчёт: Миграция Axiom:Void → Axiom:Void
 
 **Дата:** 2026-05-28 | **Автозапуск:** cron `ef2a3569` (запланирован в 00:54)
 **Бэкап-тег:** `backup-before-axiomvoid-20260527`
@@ -36,10 +36,10 @@ tags: [миграция, axiom-void, qsnera, ребрендинг]
 
 ### Шаг 1 — Агент-файлы (~/.claude/agents/)
 
-Обновлены 6 из 9 файлов (3 не содержали QSNera-специфики):
+Обновлены 6 из 9 файлов (3 не содержали Axiom:Void-специфики):
 
 **dispatcher.md:**
-- `мультиагентной AI-команды QSNera` → `мультиагентной AI-команды Axiom:Void`
+- `мультиагентной AI-команды Axiom:Void` → `мультиагентной AI-команды Axiom:Void`
 
 **frontend-dev.md:**
 - Цвета: `#1a1a1a / #d4a843 / #fff` → `#000000 / #00D4FF / #E8E8E8`, JetBrains Mono / Inter
@@ -53,7 +53,7 @@ tags: [миграция, axiom-void, qsnera, ребрендинг]
 - Дизайн-система: все 8 CSS-переменных Axiom:Void, JetBrains Mono, glow-тени
 
 **devops.md:**
-- `Railway (основная платформа QSNera)` → `Railway (основная платформа Axiom:Void)`
+- `Railway (основная платформа Axiom:Void)` → `Railway (основная платформа Axiom:Void)`
 
 **marketer.md (style):**
 - `Luxury сегмент: статус` → `Tech-продукт: точность, надёжность`
@@ -62,7 +62,7 @@ tags: [миграция, axiom-void, qsnera, ребрендинг]
 
 ### Шаг 2 — ~/CLAUDE.md (глобальный)
 
-- Заголовок: `QSNera` → `Axiom:Void`
+- Заголовок: `Axiom:Void` → `Axiom:Void`
 - Секция стиля полностью заменена:
   - Цвета: `#1a1a1a/#d4a843` → `#000000/#00D4FF`
   - Шрифты: `Playfair Display / Inter` → `JetBrains Mono / Inter`
@@ -73,10 +73,10 @@ tags: [миграция, axiom-void, qsnera, ребрендинг]
 ### Шаг 3 — Brain/Memories.md
 
 Diff с бэкапом подтверждает:
-- `основатель студии QSNera` → `основатель студии Axiom:Void`
+- `основатель студии Axiom:Void` → `основатель студии Axiom:Void`
 - Строка про плитку → веб-разработка + список 4 услуг
 - Структура vault-папок без emoji (убраны все 📝✅💡🏗)
-- Сортировка: `проекты/QSNera` → `проекты/Axiom:Void`
+- Сортировка: `проекты/Axiom:Void` → `проекты/Axiom:Void`
 - Footline обновлена датой и тегом миграции
 
 **Push:** `063f379` → digital-brain-vault/main ✅
@@ -85,7 +85,7 @@ Diff с бэкапом подтверждает:
 
 ### Шаг 6 — Гайд переименован
 
-- `Инструкция_QSNera_Guide.md` → `Инструкция_AxiomVoid_Guide.md`
+- `Инструкция_Axiom:Void_Guide.md` → `Инструкция_AxiomVoid_Guide.md`
 - frontmatter: title + version 1.0 → 2.0 + updated
 - Описание бизнеса: плитка → Axiom:Void + список услуг
 - CLAUDE.md vault: ссылка обновлена
@@ -95,14 +95,14 @@ Diff с бэкапом подтверждает:
 
 ### Шаг 7 — Dashboard'ы
 
-**Бизнес QSNera/Dashboard.md:**
-- title: `QSNera — Дашборд` → `Axiom:Void — Дашборд бизнеса`
-- H1: `QSNera — Бизнес` → `Axiom:Void — Бизнес`
+**Бизнес Axiom:Void/Dashboard.md:**
+- title: `Axiom:Void — Дашборд` → `Axiom:Void — Дашборд бизнеса`
+- H1: `Axiom:Void — Бизнес` → `Axiom:Void — Бизнес`
 - Tagline: `Премиум укладка плитки` → `Веб-разработка | axiom-void.dev`
-- **Push:** `f9bde54` → qsnera-vault/main ✅
+- **Push:** `f9bde54` → axiomvoid-vau/main ✅
 
 **Цифровой мозг/Dashboard.md:**
-- Ссылка `[[Инструкция_QSNera_Guide]]` → `[[Инструкция_AxiomVoid_Guide]]`
+- Ссылка `[[Инструкция_Axiom:Void_Guide]]` → `[[Инструкция_AxiomVoid_Guide]]`
 - **Push:** `ba18fc9` → digital-brain-vault/main ✅
 
 ---
@@ -133,16 +133,16 @@ ls ~/Desktop/premium-tiling-website/
 
 ```bash
 # В bot.py:
-# "QSNera AI Bot" → "Axiom:Void Bot"
+# "Axiom:Void AI Bot" → "Axiom:Void Bot"
 # SYSTEM_PROMPT_CHAT: плитка/мрамор → веб-студия
 
 # В analyzer.py:
-# classify_note: "QSNera (укладка)" → "Axiom:Void (веб-студия)"
+# classify_note: "Axiom:Void (укладка)" → "Axiom:Void (веб-студия)"
 # preprocess_task SYSTEM: аналогично
 
-# Vault-имена ("Бизнес QSNera") — НЕ менять!
+# Vault-имена ("Бизнес Axiom:Void") — НЕ менять!
 
-cd ~/Desktop/qsnera-reels-bot
+cd ~/Desktop/axiomvoid-bot
 git add -A && git commit -m "feat: update bot context to Axiom:Void" && git push
 ```
 
@@ -152,7 +152,7 @@ git add -A && git commit -m "feat: update bot context to Axiom:Void" && git push
 
 ### Brain/Memories.md ✅
 ```diff
--основатель студии **QSNera**
+-основатель студии **Axiom:Void**
 +основатель студии **Axiom:Void**
 -Студия: укладка **премиум-плитки**
 +Студия: **веб-разработка и цифровые продукты**
@@ -160,7 +160,7 @@ git add -A && git commit -m "feat: update bot context to Axiom:Void" && git push
 
 ### Dashboard.md (Бизнес) ✅
 ```diff
--title: QSNera — Дашборд
+-title: Axiom:Void — Дашборд
 +title: Axiom:Void — Дашборд бизнеса
 -Премиум укладка плитки и натурального камня
 +Веб-разработка и цифровые продукты | axiom-void.dev
@@ -168,7 +168,7 @@ git add -A && git commit -m "feat: update bot context to Axiom:Void" && git push
 
 ### CLAUDE.md (vault) ✅
 ```diff
--Родион Яланский / QSNera
+-Родион Яланский / Axiom:Void
 +Родион Яланский / Axiom:Void
 -укладка премиум-плитки (мрамор, натуральный камень, Zellige)
 +веб-разработка и цифровые продукты
@@ -183,7 +183,7 @@ Desktop заблокирован — diff недоступен. Файл не и
 
 | Файл | Изменение |
 |------|-----------|
-| `~/.claude/agents/dispatcher.md` | QSNera → Axiom:Void |
+| `~/.claude/agents/dispatcher.md` | Axiom:Void → Axiom:Void |
 | `~/.claude/agents/frontend-dev.md` | Цвета + шрифты |
 | `~/.claude/agents/marketer.md` | Полный ребрендинг контекста |
 | `~/.claude/agents/designer.md` | Дизайн-система |
@@ -192,15 +192,15 @@ Desktop заблокирован — diff недоступен. Файл не и
 | `~/vaults/Цифровой мозг/Brain/Memories.md` | Полный ребрендинг |
 | `~/vaults/Цифровой мозг/CLAUDE.md` | Заголовок + бизнес + ссылка гайда |
 | `~/vaults/Цифровой мозг/Dashboard.md` | Ссылка на гайд |
-| `~/vaults/Цифровой мозг/Инструкция_AxiomVoid_Guide.md` | Новый файл (из QSNera) |
-| `~/vaults/Бизнес QSNera/Dashboard.md` | Полный ребрендинг |
+| `~/vaults/Цифровой мозг/Инструкция_AxiomVoid_Guide.md` | Новый файл (из Axiom:Void) |
+| `~/vaults/Бизнес Axiom:Void/Dashboard.md` | Полный ребрендинг |
 
 ---
 
 ## ⚠️ Что НЕ изменено (как запрошено)
 
-- `~/vaults/Бизнес QSNera/` — не переименован ✅
-- `~/Library/LaunchAgents/com.qsnera.*.plist` — не тронуты ✅
+- `~/vaults/Бизнес Axiom:Void/` — не переименован ✅
+- `~/Library/LaunchAgents/com.axiomvoid.*.plist` — не тронуты ✅
 - `~/.claude/.env` — не тронут ✅
 - GitHub repo names — не изменены ✅
 - Vault-имена в коде бота — не изменены ✅

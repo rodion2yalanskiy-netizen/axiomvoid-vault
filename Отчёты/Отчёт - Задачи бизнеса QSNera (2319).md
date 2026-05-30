@@ -1,5 +1,5 @@
 ---
-task: Задачи бизнеса QSNera (2319)
+task: Задачи бизнеса Axiom:Void (2319)
 date: 2026-05-26
 time: 16:42 local
 status: completed
@@ -9,7 +9,7 @@ tool: claude-code
 tags: [выполнено, диагностика-сайта, ai-dispatcher]
 ---
 
-# ✅ Отчёт: Диагностика и исправление сайта QSNera
+# ✅ Отчёт: Диагностика и исправление сайта Axiom:Void
 
 **Дата:** 2026-05-26 | **Время выполнения:** ~30 мин
 **Источник:** Claude Code (интерактивная сессия) + AI Dispatcher
@@ -33,7 +33,7 @@ tags: [выполнено, диагностика-сайта, ai-dispatcher]
 ### Designer + Frontend Dev: Диагностика
 
 **Документы изучены:**
-- `~/vaults/Бизнес QSNera/Сайт/Дизайн-система.md`
+- `~/vaults/Бизнес Axiom:Void/Сайт/Дизайн-система.md`
 - `~/Desktop/premium-tiling-website/CLAUDE.md` (полная спецификация)
 - `~/Desktop/premium-tiling-website/index.html` (629 строк)
 

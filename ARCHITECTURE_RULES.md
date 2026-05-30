@@ -4,7 +4,7 @@ version: 2026-05-26
 applies_to: [telegram-bot, github-actions, local-agent, claude-code, any-ai-agent]
 ---
 
-# ⚠️ АРХИТЕКТУРНЫЕ ПРАВИЛА QSNera Vault
+# ⚠️ АРХИТЕКТУРНЫЕ ПРАВИЛА Axiom:Void Vault
 
 > **ОБЯЗАТЕЛЬНО для всех агентов, ботов и скриптов.**
 > Нарушение этих правил ломает синхронизацию iOS Obsidian Sync.
@@ -42,7 +42,7 @@ applies_to: [telegram-bot, github-actions, local-agent, claude-code, any-ai-agen
 
 ## ✅ РАЗРЕШЁННЫЕ ПАПКИ (исчерпывающий список)
 
-### Бизнес QSNera (`qsnera-vault`):
+### Бизнес Axiom:Void (`axiomvoid-vau`):
 
 | Папка | Назначение |
 |-------|-----------|
@@ -111,7 +111,7 @@ applies_to: [telegram-bot, github-actions, local-agent, claude-code, any-ai-agen
 
 ### Claude Code (сессии)
 - ✅ При создании файлов — проверять путь на эмоджи в папках
-- ✅ Работать через `~/vaults/Бизнес QSNera/` (с пробелом!)
+- ✅ Работать через `~/vaults/Бизнес Axiom:Void/` (с пробелом!)
 - ❌ НЕЛЬЗЯ создавать папки вне списка разрешённых
 - ✅ Коммиты с `[skip ci]` если не нужно запускать Actions
 
@@ -134,14 +134,14 @@ applies_to: [telegram-bot, github-actions, local-agent, claude-code, any-ai-agen
 
 ```bash
 # 1. Перенести файлы из emoji-папки в правильную
-mv ~/vaults/Бизнес\ QSNera/✅\ Выполнено\ Claude/*.md \
-   ~/vaults/Бизнес\ QSNera/Отчёты/
+mv ~/vaults/Бизнес\ Axiom:Void/✅\ Выполнено\ Claude/*.md \
+   ~/vaults/Бизнес\ Axiom:Void/Отчёты/
 
 # 2. Удалить пустую emoji-папку
-rmdir ~/vaults/Бизнес\ QSNera/✅\ Выполнено\ Claude/
+rmdir ~/vaults/Бизнес\ Axiom:Void/✅\ Выполнено\ Claude/
 
 # 3. Закоммитить
-cd ~/vaults/Бизнес\ QSNera
+cd ~/vaults/Бизнес\ Axiom:Void
 git add -A
 git commit -m "fix: удалить emoji-папки [skip ci]"
 git pull --rebase && git push
