@@ -432,3 +432,6 @@ echo "$(date)|$TASK_NAME|$EXIT_CODE|${DURATION}s" >> ~/.claude/agents/metrics.lo
 - [AI Agent Self-Improvement — Medium](https://medium.com/@abhilasha.sinha/smart-ai-evolution-strategies-for-building-self-improving-autonomous-agents-a9978648ef9f) — паттерны
 - [Agentic AI Design Patterns 2025 — Shakudo](https://www.shakudo.io/blog/5-agentic-ai-design-patterns-transforming-enterprise-operations-in-2025) — enterprise паттерны
 - [Claude Prompting Best Practices](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices) — официальная документация
+
+## Связи
+- [[Dashboard]]

@@ -63,3 +63,7 @@ tags: [выполнено, local-agent]
 
 <!-- sync-fix -->
 
+
+## Связи
+- [[Dashboard]]
+- [[Задачи]]

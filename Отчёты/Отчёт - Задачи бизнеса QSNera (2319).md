@@ -121,3 +121,7 @@ cd ~/Desktop/premium-tiling-website && git push origin main
 с полным accessibility. Нет console.log в JS. HTML семантичен.
 
 Статус сайта после исправлений: Соответствует спецификации CLAUDE.md
+
+## Связи
+- [[Dashboard]]
+- [[Задачи]]

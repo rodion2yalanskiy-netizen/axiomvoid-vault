@@ -2,6 +2,7 @@
 type: rules
 version: 2026-05-26
 applies_to: [telegram-bot, github-actions, local-agent, claude-code, any-ai-agent]
+tags: [axiomvoid]
 ---
 
 # ⚠️ АРХИТЕКТУРНЫЕ ПРАВИЛА Axiom:Void Vault
@@ -150,3 +151,6 @@ git pull --rebase && git push
 ---
 
 *Создано: 2026-05-26 | Версия: 2.0 | Автор: Claude Code*
+
+## Связи
+- [[Dashboard]]

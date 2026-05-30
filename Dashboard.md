@@ -1,7 +1,8 @@
 ---
 title: Axiom:Void — Дашборд бизнеса
-updated: 2026-05-28
+updated: 2026-05-30
 type: dashboard
+tags: [dashboard, axiomvoid, центр]
 ---
 
 # 🏢 Axiom:Void — Бизнес
@@ -45,3 +46,12 @@ task_name: Название
 ## 🎨 Стиль Axiom:Void
 - Фон: `#1a1a1a` | Золото: `#d4a843`
 - Playfair Display + Inter
+
+## Связи
+- [[ARCHITECTURE_RULES]]
+- [[Клиенты]]
+- [[Задачи]]
+- [[Отчёты]]
+- [[Маркетинг]]
+- [[Сайт]]
+- [[Brain]]

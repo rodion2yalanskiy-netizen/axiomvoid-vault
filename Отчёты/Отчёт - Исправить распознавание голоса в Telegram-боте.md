@@ -4,6 +4,7 @@ date: 2026-05-25
 status: completed
 source: claude-code
 task_name: Исправить распознавание голоса в Telegram-боте
+tags: [отчёты axiomvoid]
 ---
 
 # ✅ Отчёт — Исправить распознавание голоса в Telegram-боте
@@ -69,3 +70,7 @@ MIME_TYPES = {
 - Бот активен: @Improvement_for_mi_bot ✅
 - GitHub vault обновлён: 618112c ✅
 - Emoji-папки удалены из всех vault'ов ✅
+
+## Связи
+- [[Dashboard]]
+- [[Задачи]]

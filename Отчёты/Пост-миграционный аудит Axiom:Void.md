@@ -3,6 +3,7 @@ date: 2026-05-28
 type: post-migration-audit
 backup-tag: backup-before-axiomvoid-20260527
 auditor: Claude Sonnet 4.6 (автономная верификация)
+tags: [отчёты axiomvoid]
 ---
 
 # Пост-миграционная проверка Axiom:Void
@@ -122,3 +123,7 @@ git -C ~/Desktop/axiomvoid-bot checkout backup-before-axiomvoid-20260527 -- bot.
 ---
 
 *Аудит выполнен: 2026-05-28 | Верификация по реальным diff'ам и grep-счётчикам | Claude Sonnet 4.6*
+
+## Связи
+- [[Dashboard]]
+- [[Задачи]]

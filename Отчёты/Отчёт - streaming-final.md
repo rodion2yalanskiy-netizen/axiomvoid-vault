@@ -4,6 +4,7 @@ date: 2026-05-29
 duration: 23s
 tool: telegram-worker
 status: completed
+tags: [отчёты axiomvoid]
 ---
 
 # Отчёт: streaming-final
@@ -20,3 +21,7 @@ status: completed
 ✅ Стриминг telegram-worker работает
 
 Отчёт сохранён: `~/vaults/AxiomVoid/Отчёты/Отчёт - streaming-final.md`
+
+## Связи
+- [[Dashboard]]
+- [[Задачи]]

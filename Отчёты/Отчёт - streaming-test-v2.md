@@ -4,6 +4,7 @@ date: 2026-05-29
 duration: 15s
 tool: telegram-worker
 status: completed
+tags: [отчёты axiomvoid]
 ---
 
 # Отчёт: streaming-test-v2
@@ -15,3 +16,7 @@ status: completed
 Тест пройден успешно
 
 Отчёт сохранён: `~/vaults/AxiomVoid/Отчёты/Отчёт - streaming-test-v2.md`
+
+## Связи
+- [[Dashboard]]
+- [[Задачи]]
