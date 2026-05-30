@@ -6,7 +6,7 @@ status: partially_completed
 duration: ~75 мин
 source: cron-auto (ef2a3569)
 tool: claude-code
-tags: [миграция, axiom-void, qsnera, ребрендинг]
+tags: [миграция, axiom-void, axiomvoid, ребрендинг]
 ---
 
 # ✅ Отчёт: Миграция Axiom:Void → Axiom:Void

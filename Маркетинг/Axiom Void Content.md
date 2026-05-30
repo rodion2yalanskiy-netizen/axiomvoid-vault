@@ -1,6 +1,6 @@
 ---
 tags:
-  - qsnera
+  - axiomvoid
   - content
   - web-dev
 date: 2026-05-21

@@ -70,7 +70,7 @@ tags: [выполнено, диагностика-сайта, ai-dispatcher]
 - SVG иконка: добавлен `aria-hidden="true"`
 
 **4. Mobile CTA fix**
-- `href="tel:+"` → `href="mailto:inquire@qsnera.com"`
+- `href="tel:+"` → `href="mailto:inquire@axiomvoid.com"`
 
 **5. Footer cleanup**
 - Убрана строка `Pipeline v1.0 — powered by AI`
